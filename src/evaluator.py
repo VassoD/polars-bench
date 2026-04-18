@@ -15,6 +15,8 @@ def compare(actual, expected, type_hint: str) -> bool:
         except (TypeError, ValueError):
             return False
     if type_hint == "scalar":
+        if isinstance(actual, pl.DataFrame):
+            return False
         return actual == expected
     if isinstance(actual, pl.DataFrame):
         return actual.to_dicts() == expected
