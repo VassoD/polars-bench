@@ -9,9 +9,9 @@ def _is_apple_silicon() -> bool:
 class CodeGenerator:
     def __init__(self, model_name: str | None = None):
         if _is_apple_silicon():
-            self._init_mlx(model_name or "mlx-community/Qwen2.5-Coder-7B-Instruct-4bit")
+            self._init_mlx(model_name or "mlx-community/Qwen2.5-Coder-1.5B-Instruct-4bit")
         else:
-            self._init_transformers(model_name or "Qwen/Qwen2.5-Coder-7B-Instruct")
+            self._init_transformers(model_name or "Qwen/Qwen2.5-Coder-1.5B-Instruct")
 
     def _init_mlx(self, model_name: str) -> None:
         from mlx_lm import load
