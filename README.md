@@ -38,7 +38,7 @@ python data/make_data.py
 **Benchmark server (used by the platform runner):**
 ```bash
 bash start.sh
-# or: uvicorn server:app --host 0.0.0.0 --port 8000
+# or: uvicorn server:app --host 0.0.0.0 --port 9000
 ```
 
 The server exposes:
