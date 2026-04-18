@@ -43,6 +43,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+class ChatRequest(BaseModel):
+    message: str
+    tables: dict
+
+
+class ChatResponse(BaseModel):
+    response: str
+
+
 class PredictRequest(BaseModel):
     model_config = {"populate_by_name": True}
     question_id: str = ""
@@ -63,11 +72,24 @@ def _load_df(req: PredictRequest) -> pl.DataFrame:
     return pl.read_parquet(req.data_path or "data/sales.parquet")
 
 
+@app.get("/")
 @app.get("/health")
 def health() -> dict:
     if _generator is None:
         raise HTTPException(status_code=503, detail="model loading")
     return {"status": "ok", "model_loaded": True}
+
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(req: ChatRequest) -> ChatResponse:
+    if _generator is None:
+        _model_ready.wait(timeout=600)
+    if _generator is None:
+        raise HTTPException(status_code=503, detail=_model_error or "Model not loaded")
+    schema = ", ".join(f"{k}: {v}" for k, v in req.tables.items())
+    prompt = build_prompt(schema, req.message)
+    code = _generator.generate(prompt)
+    return ChatResponse(response=code)
 
 
 @app.post("/predict", response_model=PredictResponse)
