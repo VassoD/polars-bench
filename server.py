@@ -65,7 +65,9 @@ def _load_df(req: PredictRequest) -> pl.DataFrame:
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "model_loaded": _generator is not None}
+    if _generator is None:
+        raise HTTPException(status_code=503, detail="model loading")
+    return {"status": "ok", "model_loaded": True}
 
 
 @app.post("/predict", response_model=PredictResponse)
