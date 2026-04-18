@@ -4,6 +4,7 @@ anyio==4.13.0
 bitsandbytes==0.46.0
 certifi==2026.2.25
 click==8.3.2
+fastapi==0.115.12
 filelock==3.28.0
 fsspec==2026.3.0
 h11==0.16.0
@@ -31,9 +32,11 @@ safetensors==0.7.0
 sentencepiece==0.2.1
 shellingham==1.5.4
 six==1.17.0
+starlette==0.46.2
 tokenizers==0.22.2
 torch==2.7.0
-tqdm==4.67.3
+tqdm==4.67.1
 transformers==5.5.4
 typer==0.24.1
 typing_extensions==4.15.0
+uvicorn==0.34.2

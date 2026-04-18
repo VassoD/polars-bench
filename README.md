@@ -35,6 +35,17 @@ python data/make_data.py
 
 ## Run
 
+**Benchmark server (used by the platform runner):**
+```bash
+bash start.sh
+# or: uvicorn server:app --host 0.0.0.0 --port 8000
+```
+
+The server exposes:
+- `POST /predict` — receives `{question_id, question, schema, data_path?, data_b64?}`, returns `{question_id, answer}`
+- `GET /health` — readiness probe
+
+**Local eval loop (development only):**
 ```bash
 python run.py
 ```
@@ -43,10 +54,13 @@ The model backend is selected automatically: MLX on Apple Silicon, transformers 
 
 ## Files
 
+- `server.py` — FastAPI inference server (benchmark entrypoint)
+- `start.sh` — Starts the server on port 8000
 - `src/model.py` — Code generator (MLX on Apple Silicon, transformers on Linux/CUDA)
 - `src/prompt.py` — System instruction + few-shot examples
 - `src/executor.py` — Safe code execution with timeout and output cleanup
 - `src/evaluator.py` — Eval loop with self-repair retry
+- `run.py` — Local evaluation script (development only)
 - `data/eval_set.json` — Ground-truth test cases
 - `data/make_data.py` — Generates synthetic sales parquet
 

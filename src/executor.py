@@ -1,5 +1,6 @@
 import polars as pl
 import signal
+import threading
 import re
 from contextlib import contextmanager
 
@@ -10,6 +11,10 @@ class TimeoutError(Exception):
 
 @contextmanager
 def timeout(seconds):
+    # signal.alarm only works on the main thread; skip in worker threads
+    if threading.current_thread() is not threading.main_thread():
+        yield
+        return
     def handler(signum, frame):
         raise TimeoutError(f"Execution exceeded {seconds}s")
     signal.signal(signal.SIGALRM, handler)
