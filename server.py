@@ -1,11 +1,12 @@
 import base64
 import io
 import logging
+import threading
 from contextlib import asynccontextmanager
 from typing import Any
 
 import polars as pl
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from src.executor import execute_code
@@ -16,14 +17,26 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger(__name__)
 
 _generator: CodeGenerator | None = None
+_model_ready = threading.Event()
+_model_error: str | None = None
+
+
+def _load_model() -> None:
+    global _generator, _model_error
+    try:
+        log.info("Loading model...")
+        _generator = CodeGenerator()
+        log.info("Model ready.")
+        _model_ready.set()
+    except Exception as exc:
+        _model_error = str(exc)
+        log.error("Model load failed: %s", exc)
+        _model_ready.set()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _generator
-    log.info("Loading model...")
-    _generator = CodeGenerator()
-    log.info("Model ready.")
+    threading.Thread(target=_load_model, daemon=True).start()
     yield
 
 
@@ -57,6 +70,10 @@ def health() -> dict:
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest) -> PredictResponse:
+    if _generator is None:
+        _model_ready.wait(timeout=600)
+    if _generator is None:
+        raise HTTPException(status_code=503, detail=_model_error or "Model not loaded")
     log.info("Q[%s]: %s", req.question_id, req.question)
     df = _load_df(req)
     prompt = build_prompt(req.df_schema, req.question)
