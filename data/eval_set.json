@@ -1,0 +1,18 @@
+[
+  {"id": "q1", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "How many rows are in the dataframe?", "expected": 1000, "type": "scalar"},
+  {"id": "q2", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "How many sales occurred in France?", "expected": 197, "type": "scalar"},
+  {"id": "q3", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "What is the total revenue in France?", "expected": 49863.49, "type": "float"},
+  {"id": "q4", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "How many unique countries are in the dataset?", "expected": 5, "type": "scalar"},
+  {"id": "q5", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "What is the average revenue across all sales?", "expected": 263.21, "type": "float"},
+  {"id": "q6", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "How many sales have quantity greater than 25?", "expected": 511, "type": "scalar"},
+  {"id": "q7", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "What is the total quantity sold of Widget products?", "expected": 6490, "type": "scalar"},
+  {"id": "q9", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "Which product has the highest total revenue?", "expected": "Gadget", "type": "scalar"},
+  {"id": "q11", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "How many sales occurred in Q1 2024 (January through March)?", "expected": 245, "type": "scalar"},
+  {"id": "q12", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "Which month number had the highest total revenue?", "expected": 9, "type": "scalar"},
+  {"id": "q14", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "Which country has the lowest average quantity per sale?", "expected": "Italy", "type": "scalar"},
+  {"id": "q16", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "What is the median quantity?", "expected": 26.0, "type": "float"},
+  {"id": "q17", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "What is the standard deviation of revenue?", "expected": 142.65, "type": "float"},
+  {"id": "q18", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "How many sales have revenue greater than 300?", "expected": 428, "type": "scalar"},
+  {"id": "q19", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "What fraction of sales occurred in France?", "expected": 0.197, "type": "float"},
+  {"id": "q20", "schema": "df: id (i64), product (str), revenue (f64), country (str), date (date), quantity (i64)", "question": "How many sales occurred in Japan?", "expected": 0, "type": "scalar"}
+]
