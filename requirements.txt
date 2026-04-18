@@ -1,5 +1,7 @@
+accelerate==1.7.0
 annotated-doc==0.0.4
 anyio==4.13.0
+bitsandbytes==0.46.0
 certifi==2026.2.25
 click==8.3.2
 filelock==3.28.0
@@ -14,14 +16,10 @@ Jinja2==3.1.6
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
-mlx==0.31.1
-mlx-lm==0.31.2
-mlx-metal==0.31.1
 numpy==2.4.4
 packaging==26.1
 pandas==3.0.2
 polars==1.40.0
-polars-runtime-32==1.40.0
 protobuf==7.34.1
 pyarrow==23.0.1
 Pygments==2.20.0
@@ -34,6 +32,7 @@ sentencepiece==0.2.1
 shellingham==1.5.4
 six==1.17.0
 tokenizers==0.22.2
+torch==2.7.0
 tqdm==4.67.3
 transformers==5.5.4
 typer==0.24.1

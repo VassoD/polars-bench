@@ -15,9 +15,20 @@ Text-to-Polars code generation using Qwen2.5-Coder (MLX backend, 4-bit quantizat
 
 ## Setup
 
+**Apple Silicon (MLX backend):**
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+pip install -r requirements-apple.txt
+python data/make_data.py
+```
+
+**Linux / CUDA (transformers + bitsandbytes backend):**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+# Install torch with the CUDA version matching your driver (example: cu121)
+pip install torch --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
 python data/make_data.py
 ```
@@ -28,9 +39,11 @@ python data/make_data.py
 python run.py
 ```
 
+The model backend is selected automatically: MLX on Apple Silicon, transformers (4-bit via bitsandbytes, float16 fallback) on Linux/CUDA.
+
 ## Files
 
-- `src/model.py` — MLX-based code generator
+- `src/model.py` — Code generator (MLX on Apple Silicon, transformers on Linux/CUDA)
 - `src/prompt.py` — System instruction + few-shot examples
 - `src/executor.py` — Safe code execution with timeout and output cleanup
 - `src/evaluator.py` — Eval loop with self-repair retry
@@ -42,8 +55,9 @@ python run.py
 1. **Targeted few-shots** — each example fixes a specific Polars footgun (`.dt.month()` parens, `.is_in()` vs `.isin()`, `descending=True` not `ascending=True`)
 2. **Explicit syntax rules in system prompt** — cheaper than adding more few-shots
 3. **Self-repair** — catches transient generation errors with one retry
-4. **Tight `max_tokens=150`** — Polars one-liners don't need more
+4. **`max_tokens=200`** — covers complex group-by chains without over-generating
 
 ## Notes
 
-- Developed on Apple Silicon (M-series) using MLX. For CUDA targets, swap `src/model.py` to use `transformers` or `vllm` with the same `CodeGenerator` interface.
+- Developed on Apple Silicon (M-series). `src/model.py` auto-selects MLX on Apple Silicon and `transformers` (4-bit via bitsandbytes, float16 fallback) on Linux/CUDA.
+- Linux target model: `Qwen/Qwen2.5-Coder-7B-Instruct` (same model family, downloaded from HuggingFace Hub on first run).
