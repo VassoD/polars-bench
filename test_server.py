@@ -39,20 +39,20 @@ def run_eval():
     for case in cases:
         payload = {
             "question_id": case["id"],
-            "question": case["question"],
+            "message": case["question"],
             "schema": case["schema"],
             "data_path": "data/sales.parquet",
         }
-        r = httpx.post(f"{BASE}/predict", json=payload, timeout=60)
+        r = httpx.post(f"{BASE}/chat", json=payload, timeout=60)
         if r.status_code != 200:
             print(f"✗ {case['id']} HTTP {r.status_code}: {r.text[:120]}")
             continue
 
-        answer = r.json()["answer"]
-        ok = compare(answer, case["expected"], case.get("type", "scalar"))
+        response = r.json()["response"]
+        ok = compare(response, case["expected"], case.get("type", "scalar"))
         correct += int(ok)
         mark = "✓" if ok else "✗"
-        print(f"{mark} {case['id']}: got={answer!r}  expected={case['expected']!r}")
+        print(f"{mark} {case['id']}: got={response!r}  expected={case['expected']!r}")
 
     print(f"\n{correct}/{len(cases)} correct")
     return correct == len(cases)

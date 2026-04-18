@@ -42,7 +42,7 @@ bash start.sh
 ```
 
 The server exposes:
-- `POST /predict` — receives `{question_id, question, schema, data_path?, data_b64?}`, returns `{question_id, answer}`
+- `POST /chat` — receives `{question_id, message, schema, data_path?, data_b64?}`, returns `{question_id, response}`
 - `GET /health` — readiness probe
 
 **Local eval loop (development only):**

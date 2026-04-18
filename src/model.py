@@ -36,6 +36,8 @@ class CodeGenerator:
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(42)
         print(f"Loading {model_name} (transformers, revision={revision})...")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, revision=revision)
+        
         load_kwargs: dict = {"device_map": "auto", "revision": revision}
         try:
             from transformers import BitsAndBytesConfig
@@ -45,11 +47,11 @@ class CodeGenerator:
                 bnb_4bit_quant_type="nf4",
             )
             print("Using 4-bit quantization (bitsandbytes).")
-        except (ImportError, Exception):
-            load_kwargs["torch_dtype"] = torch.float16
-            print("bitsandbytes unavailable, loading in float16.")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, revision=revision)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+        except (ImportError, Exception) as e:
+            print(f"bitsandbytes failed ({e}), loading in float16.")
+            load_kwargs = {"device_map": "auto", "torch_dtype": torch.float16, "revision": revision}
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
         print("Model loaded.")
 
     def generate(self, prompt: str, max_tokens: int = 200) -> str:

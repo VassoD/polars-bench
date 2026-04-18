@@ -1,10 +1,15 @@
+import base64
+import io
 import logging
 import threading
 from contextlib import asynccontextmanager
+from typing import Any
 
+import polars as pl
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from src.executor import execute_code
 from src.model import CodeGenerator
 from src.prompt import build_prompt
 
@@ -39,41 +44,59 @@ app = FastAPI(lifespan=lifespan)
 
 
 class ChatRequest(BaseModel):
+    model_config = {"populate_by_name": True}
+    question_id: str = ""
     message: str
-    tables: dict
+    schema: str = Field(..., alias="schema")
+    data_path: str | None = None
+    data_b64: str | None = None
 
 
 class ChatResponse(BaseModel):
-    response: str
+    question_id: str
+    response: Any
 
 
-def _require_model() -> CodeGenerator:
-    if _generator is None:
-        _model_ready.wait(timeout=600)
-    if _generator is None:
-        raise HTTPException(status_code=503, detail=_model_error or "Model not loaded")
-    return _generator
-
-
-@app.get("/")
-def root() -> dict:
-    if _generator is None:
-        raise HTTPException(status_code=503, detail="model loading")
-    return {"status": "ok"}
+def _load_df(req: ChatRequest) -> pl.DataFrame:
+    if req.data_b64:
+        return pl.read_parquet(io.BytesIO(base64.b64decode(req.data_b64)))
+    return pl.read_parquet(req.data_path or "data/sales.parquet")
 
 
 @app.get("/health")
 def health() -> dict:
     if _generator is None:
         raise HTTPException(status_code=503, detail="model loading")
-    return {"status": "ok"}
+    return {"status": "ok", "model_loaded": True}
 
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest) -> ChatResponse:
-    gen = _require_model()
-    schema = ", ".join(f"{k}: {v}" for k, v in req.tables.items())
-    prompt = build_prompt(schema, req.message)
-    code = gen.generate(prompt)
-    log.info("Q: %s | Code: %s", req.message[:80], code[:80])
-    return ChatResponse(response=code)
+    if _generator is None:
+        _model_ready.wait(timeout=600)
+    if _generator is None:
+        raise HTTPException(status_code=503, detail=_model_error or "Model not loaded")
+    log.info("Q[%s]: %s", req.question_id, req.message)
+    df = _load_df(req)
+    prompt = build_prompt(req.schema, req.message)
+
+    code = _generator.generate(prompt)
+    result, error = execute_code(code, df)
+
+    if error is not None:
+        log.warning("Self-repair triggered: %s", error)
+        repair_prompt = (
+            f"{prompt}\n{code}\n\n"
+            f"That code failed with error: {error}\n"
+            f"Corrected code (expression only):"
+        )
+        code = _generator.generate(repair_prompt)
+        result, error = execute_code(code, df)
+
+    if isinstance(result, pl.DataFrame):
+        response = result.to_dicts()
+    else:
+        response = result
+
+    log.info("A[%s]: %s (err=%s)", req.question_id, response, error)
+    return ChatResponse(question_id=req.question_id, response=response)
